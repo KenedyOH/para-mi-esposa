@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Corazón 3D de Partículas</title>
+<title>Corazón 3D con Rastro</title>
 
 <style>
 html, body {
@@ -38,11 +38,12 @@ window.addEventListener("resize", () => {
 });
 
 /* ===== CONFIG ===== */
-const PARTICLES = 2400;
+const PARTICLES = 4800;
 const ROTATION_SPEED = 0.008;
 const TRANSITION_TIME = 5000;
 const VIB_HEART = 0.8;
 const VIB_TEXT = 0.25;
+const TRAIL_ALPHA = 0.18; // rastro
 
 const particles = [];
 let mode = "heart";
@@ -140,14 +141,13 @@ function rotateHeart3D() {
   }
 }
 
-/* ===== TEXTO RESPONSIVE REAL ===== */
+/* ===== TEXTO RESPONSIVE ===== */
 function createText(text) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   let fontSize = canvas.height * 0.35;
   ctx.font = `bold ${fontSize}px Arial`;
 
-  // Ajuste automático al ancho de pantalla
   while (ctx.measureText(text).width > canvas.width * 0.85) {
     fontSize *= 0.95;
     ctx.font = `bold ${fontSize}px Arial`;
@@ -175,7 +175,10 @@ function createText(text) {
 
 /* ===== LOOP ===== */
 function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Fondo con transparencia → rastro
+  ctx.fillStyle = `rgba(0, 0, 0, ${TRAIL_ALPHA})`;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (mode === "rotate") {
     angle += ROTATION_SPEED;
@@ -201,7 +204,7 @@ function cycle() {
 
   setTimeout(() => {
     mode = "text";
-    createText("TE AMO 💖");
+    createText("TE AMO MI VITA💖");
   }, TRANSITION_TIME * 2);
 }
 
