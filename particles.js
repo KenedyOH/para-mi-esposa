@@ -76,7 +76,7 @@ function heart(t, scale) {
 /* ===== CREATE HEART ===== */
 function createHeart() {
   particles.length = 0;
-  const scale = Math.min(canvas.width, canvas.height) / 35;
+  const fontSize = Math.min(canvas.width, canvas.height) / 5;
 
   for (let i = 0; i < PARTICLES; i++) {
     const t = Math.random() * Math.PI * 2;
@@ -119,8 +119,9 @@ function applyRotation() {
     const dx = p.base.x - cx;
     const dy = p.base.y - cy;
 
-    p.target.x = cx + dx * Math.cos(rotation) - dy * Math.sin(rotation);
-    p.target.y = cy + dx * Math.sin(rotation) + dy * Math.cos(rotation);
+    p.target.x = p.base.x;
+    p.target.y = cy + (p.base.y - cy) * Math.cos(rotation);
+
   }
 }
 
