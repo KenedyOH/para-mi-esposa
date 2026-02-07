@@ -121,7 +121,7 @@ function createHeart() {
 function createText(text) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const fontSize = Math.min(canvas.width, canvas.height) * 0.22;
+  const fontSize = Math.min(canvas.width, canvas.height) / 5; // RESPONSIVE
   ctx.font = `bold ${fontSize}px Arial`;
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
@@ -142,6 +142,7 @@ function createText(text) {
     }
   }
 }
+
 
 /* ===== ANIMATION ===== */
 function animate() {
