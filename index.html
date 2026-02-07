@@ -2,17 +2,19 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Corazón de Partículas</title>
+
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: black;
-  }
-  canvas {
-    display: block;
-  }
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: black;
+}
+canvas {
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -23,18 +25,21 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+let mode = "heart";
+let rotation = 0;
+const PARTICLES = 900;
+const particles = [];
+
+/* ===== RESIZE CORRECTO PARA MÓVIL ===== */
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener("resize", resize);
 
-/* ===== CONFIG ===== */
-const PARTICLES = 900;
-const particles = [];
-let mode = "heart";
-let rotation = 0;
+  if (mode === "heart") createHeart();
+  if (mode === "text") createText("TE AMO 💖");
+}
+window.addEventListener("resize", resize);
+resize();
 
 /* ===== POINT ===== */
 class Point {
@@ -62,18 +67,16 @@ class Particle {
   }
 
   update() {
-    // Movimiento más lento cuando forma el texto
     const currentSpeed = (mode === "text") ? 0.015 : this.speed;
 
     this.pos.x += (this.target.x - this.pos.x) * currentSpeed;
     this.pos.y += (this.target.y - this.pos.y) * currentSpeed;
 
-    // Vibración suave (mínima en texto)
     this.offset += 0.03;
-    const vibration = (mode === "text") ? 0.08 : 0.3;
+    const vib = (mode === "text") ? 0.05 : 0.3;
 
-    this.pos.x += Math.sin(this.offset) * vibration;
-    this.pos.y += Math.cos(this.offset) * vibration;
+    this.pos.x += Math.sin(this.offset) * vib;
+    this.pos.y += Math.cos(this.offset) * vib;
   }
 
   draw() {
@@ -84,7 +87,7 @@ class Particle {
   }
 }
 
-/* ===== HEART SHAPE ===== */
+/* ===== HEART ===== */
 function heart(t, scale) {
   const x = 16 * Math.pow(Math.sin(t), 3);
   const y =
@@ -102,7 +105,7 @@ function heart(t, scale) {
 /* ===== CREATE HEART ===== */
 function createHeart() {
   particles.length = 0;
-  const scale = Math.min(canvas.width, canvas.height) / 35;
+  const scale = Math.min(canvas.width, canvas.height) / 38;
 
   for (let i = 0; i < PARTICLES; i++) {
     const t = Math.random() * Math.PI * 2;
@@ -110,11 +113,11 @@ function createHeart() {
   }
 }
 
-/* ===== CREATE TEXT ===== */
+/* ===== CREATE TEXT (RESPONSIVE) ===== */
 function createText(text) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const fontSize = Math.min(canvas.width, canvas.height) / 5;
+  const fontSize = Math.min(canvas.width * 0.25, canvas.height * 0.25);
   ctx.font = `bold ${fontSize}px Arial`;
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
@@ -124,8 +127,8 @@ function createText(text) {
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
   let i = 0;
 
-  for (let y = 0; y < canvas.height; y += 5) {
-    for (let x = 0; x < canvas.width; x += 5) {
+  for (let y = 0; y < canvas.height; y += 6) {
+    for (let x = 0; x < canvas.width; x += 6) {
       const idx = (y * canvas.width + x) * 4;
       if (data[idx + 3] > 150 && particles[i]) {
         particles[i].target = new Point(x, y);
@@ -136,7 +139,7 @@ function createText(text) {
   }
 }
 
-/* ===== ROTACIÓN PLANO Z–Y (EJE X) ===== */
+/* ===== ROTACIÓN Z–Y ===== */
 function applyZYRotation() {
   const cx = canvas.width / 2;
   const depth = Math.cos(rotation);
@@ -191,4 +194,3 @@ setInterval(cycle, 9000);
 
 </body>
 </html>
-
