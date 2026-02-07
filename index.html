@@ -4,16 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Corazón de Partículas</title>
+
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: black;
-    overflow: hidden;
-  }
-  canvas {
-    display: block;
-  }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  overflow: hidden;
+}
+canvas {
+  display: block;
+}
 </style>
 </head>
 <body>
@@ -24,24 +25,17 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let dpr = window.devicePixelRatio || 1;
-
-/* ===== RESIZE RESPONSIVE ===== */
+/* ===== RESIZE ===== */
 function resize() {
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
-  canvas.style.width = window.innerWidth + "px";
-  canvas.style.height = window.innerHeight + "px";
-
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-  createHeart(); // 🔥 recalcular partículas
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  createHeart();
 }
 window.addEventListener("resize", resize);
 resize();
 
 /* ===== CONFIG ===== */
-const PARTICLES = 900;
+const PARTICLES = 800;
 const particles = [];
 let mode = "heart";
 let rotation = 0;
@@ -61,13 +55,13 @@ class Point {
 class Particle {
   constructor(target) {
     this.pos = new Point(
-      Math.random() * window.innerWidth,
-      Math.random() * window.innerHeight
+      Math.random() * canvas.width,
+      Math.random() * canvas.height
     );
     this.base = target.clone();
     this.target = target.clone();
     this.size = Math.random() * 2 + 1;
-    this.speed = Math.random() * 0.04 + 0.03;
+    this.speed = Math.random() * 0.04 + 0.02;
     this.offset = Math.random() * Math.PI * 2;
   }
 
@@ -102,15 +96,15 @@ function heart(t, scale) {
     Math.cos(4 * t);
 
   return new Point(
-    window.innerWidth / 2 + x * scale,
-    window.innerHeight / 2 - y * scale
+    canvas.width / 2 + x * scale,
+    canvas.height / 2 - y * scale
   );
 }
 
 /* ===== CREATE HEART ===== */
 function createHeart() {
   particles.length = 0;
-  const scale = Math.min(window.innerWidth, window.innerHeight) / 35;
+  const scale = Math.min(canvas.width, canvas.height) / 35;
 
   for (let i = 0; i < PARTICLES; i++) {
     const t = Math.random() * Math.PI * 2;
@@ -118,23 +112,23 @@ function createHeart() {
   }
 }
 
-/* ===== TEXT ===== */
+/* ===== CREATE TEXT ===== */
 function createText(text) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const fontSize = Math.min(window.innerWidth, window.innerHeight) / 4;
+  const fontSize = Math.min(canvas.width, canvas.height) / 4;
   ctx.font = `bold ${fontSize}px Arial`;
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, window.innerWidth / 2, window.innerHeight / 2);
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
   let i = 0;
 
-  for (let y = 0; y < window.innerHeight; y += 6) {
-    for (let x = 0; x < window.innerWidth; x += 6) {
-      const idx = ((y * dpr) * canvas.width + (x * dpr)) * 4;
+  for (let y = 0; y < canvas.height; y += 6) {
+    for (let x = 0; x < canvas.width; x += 6) {
+      const idx = (y * canvas.width + x) * 4;
       if (data[idx + 3] > 150 && particles[i]) {
         particles[i].target = new Point(x, y);
         particles[i].base = particles[i].target.clone();
@@ -146,7 +140,7 @@ function createText(text) {
 
 /* ===== ROTACIÓN Z–Y ===== */
 function applyZYRotation() {
-  const cx = window.innerWidth / 2;
+  const cx = canvas.width / 2;
   const depth = Math.cos(rotation);
 
   for (const p of particles) {
@@ -184,10 +178,11 @@ function cycle() {
   setTimeout(() => {
     mode = "text";
     rotation = 0;
-    createText("TE AMO mi Vita 💖");
+    createText("TE AMO MI VITA 💖");
   }, 6000);
 }
 
+/* ===== START ===== */
 animate();
 cycle();
 setInterval(cycle, 9000);
