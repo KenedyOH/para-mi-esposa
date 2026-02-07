@@ -3,77 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Para mi amor 💖</title>
+  <title>Sorpresa 💖</title>
   <style>
     body {
-      background: #ffe6f0;
-      font-family: 'Comic Sans MS', cursive, sans-serif;
-      text-align: center;
       margin: 0;
-      overflow: hidden; /* evita scroll si los corazones se salen */
-      padding: 5vw;
-      position: relative;
-      height: 100vh;
+      overflow: hidden;
+      background: linear-gradient(180deg, #ffe6f0, #ffd1e8);
+      font-family: Comic Sans MS, cursive;
     }
 
-    h1 {
-      color: #ff3399;
-      font-size: 8vw;
-      margin-bottom: 2vw;
-      animation: pulse 2s infinite;
-    }
-
-    p {
-      font-size: 4vw;
-      color: #cc0066;
-      margin-bottom: 5vw;
-    }
-
-    /* Animación del texto */
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-
-    /* Corazones flotantes */
     .heart {
       position: absolute;
-      font-size: 8vw;
-      animation: float 5s linear infinite;
-      pointer-events: none; /* para que no interfieran con clics */
-    }
-
-    @keyframes float {
-      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-      10% { opacity: 1; }
-      50% { transform: translateY(50vh) rotate(180deg); }
-      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+      font-size: 40px;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
     }
   </style>
 </head>
 <body>
-  <h1>Mi Vita preciosa, eres lo mejor 💖</h1>
-  <p>Gracias por estar siempre a mi lado, te amo con locura ❤️</p>
 
-  <script>
-    // Crear corazones dinámicamente
-    function createHeart() {
-      const heart = document.createElement('div');
-      heart.className = 'heart';
-      heart.innerText = '💘';
-      heart.style.left = Math.random() * 90 + 'vw'; // posición horizontal
-      heart.style.fontSize = (Math.random() * 6 + 6) + 'vw'; // tamaño aleatorio
-      heart.style.animationDuration = (Math.random() * 3 + 4) + 's'; // velocidad aleatoria
-      document.body.appendChild(heart);
+<script src="motion.js"></script>
 
-      // Eliminar corazón después de animación
-      setTimeout(() => {
-        heart.remove();
-      }, 7000);
-    }
-
-    // Generar corazones cada 300ms
-    setInterval(createHeart, 300);
-  </script>
 </body>
 </html>
