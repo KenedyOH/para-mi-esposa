@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Corazón 3D con Rastro</title>
+<title>Corazón de Partículas Orgánico</title>
 
 <style>
 html, body {
@@ -38,12 +38,16 @@ window.addEventListener("resize", () => {
 });
 
 /* ===== CONFIG ===== */
-const PARTICLES = 4800;
-const ROTATION_SPEED = 0.008;
+const PARTICLES = 2400;
+const ROTATION_SPEED = 0.006;
 const TRANSITION_TIME = 5000;
-const VIB_HEART = 0.8;
-const VIB_TEXT = 0.25;
-const TRAIL_ALPHA = 0.18; // rastro
+
+const VIB_HEART = 1.2;
+const VIB_TEXT = 0.3;
+
+const LOOSE_FORCE = 0.04;   // 🔥 sueltos
+const NOISE = 0.6;         // 🔥 rompe rigidez
+const TRAIL_ALPHA = 0.15;  // 🔥 rastro
 
 const particles = [];
 let mode = "heart";
@@ -55,6 +59,9 @@ class Particle {
     this.x = Math.random() * canvas.width;
     this.y = Math.random() * canvas.height;
 
+    this.vx = 0;
+    this.vy = 0;
+
     this.bx = x;
     this.by = y;
     this.bz = z;
@@ -62,18 +69,27 @@ class Particle {
     this.tx = x;
     this.ty = y;
 
-    this.size = 1.7;
+    this.size = 1.6;
     this.phase = Math.random() * Math.PI * 2;
+    this.noiseX = (Math.random() - 0.5) * NOISE;
+    this.noiseY = (Math.random() - 0.5) * NOISE;
   }
 
   update() {
-    this.x += (this.tx - this.x) * 0.06;
-    this.y += (this.ty - this.y) * 0.06;
+    const dx = this.tx - this.x;
+    const dy = this.ty - this.y;
 
-    this.phase += 0.04;
+    this.vx += dx * LOOSE_FORCE;
+    this.vy += dy * LOOSE_FORCE;
+
+    this.vx *= 0.85;
+    this.vy *= 0.85;
+
+    this.phase += 0.05;
     const vib = mode === "text" ? VIB_TEXT : VIB_HEART;
-    this.x += Math.sin(this.phase) * vib;
-    this.y += Math.cos(this.phase) * vib;
+
+    this.x += this.vx + Math.sin(this.phase) * vib + this.noiseX;
+    this.y += this.vy + Math.cos(this.phase) * vib + this.noiseY;
   }
 
   draw() {
@@ -118,7 +134,7 @@ function createHeart() {
   }
 }
 
-/* ===== ROTACIÓN 3D REAL ===== */
+/* ===== ROTACIÓN 3D ===== */
 function rotateHeart3D() {
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
@@ -141,7 +157,7 @@ function rotateHeart3D() {
   }
 }
 
-/* ===== TEXTO RESPONSIVE ===== */
+/* ===== TEXTO ===== */
 function createText(text) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -175,9 +191,8 @@ function createText(text) {
 
 /* ===== LOOP ===== */
 function animate() {
-
-  // Fondo con transparencia → rastro
-  ctx.fillStyle = `rgba(0, 0, 0, ${TRAIL_ALPHA})`;
+  // 🔥 NO borramos todo → rastro
+  ctx.fillStyle = `rgba(0,0,0,${TRAIL_ALPHA})`;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (mode === "rotate") {
@@ -204,7 +219,7 @@ function cycle() {
 
   setTimeout(() => {
     mode = "text";
-    createText("TE AMO MI VITA💖");
+    createText("TE AMO 💖");
   }, TRANSITION_TIME * 2);
 }
 
