@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Corazón de Partículas Orgánico</title>
+<title>Corazón Partículas Real</title>
 
 <style>
 html, body {
@@ -13,9 +13,7 @@ html, body {
   width: 100%;
   height: 100%;
 }
-canvas {
-  display: block;
-}
+canvas { display: block; }
 </style>
 </head>
 
@@ -26,10 +24,15 @@ canvas {
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-/* ===== RESIZE ===== */
+// canvas oculto para texto
+const textCanvas = document.createElement("canvas");
+const textCtx = textCanvas.getContext("2d");
+
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  textCanvas.width = canvas.width;
+  textCanvas.height = canvas.height;
 }
 resize();
 window.addEventListener("resize", () => {
@@ -38,58 +41,47 @@ window.addEventListener("resize", () => {
 });
 
 /* ===== CONFIG ===== */
-const PARTICLES = 2400;
-const ROTATION_SPEED = 0.006;
-const TRANSITION_TIME = 5000;
+const PARTICLES = 2600;
+const SPRING = 0.045;
+const FRICTION = 0.82;
+const ROT_SPEED = 0.003;
+const TRAIL = 0.18;
 
-const VIB_HEART = 1.2;
-const VIB_TEXT = 0.3;
-
-const LOOSE_FORCE = 0.04;   // 🔥 sueltos
-const NOISE = 0.6;         // 🔥 rompe rigidez
-const TRAIL_ALPHA = 0.15;  // 🔥 rastro
-
-const particles = [];
 let mode = "heart";
 let angle = 0;
+const particles = [];
 
 /* ===== PARTICLE ===== */
 class Particle {
   constructor(x, y, z) {
     this.x = Math.random() * canvas.width;
     this.y = Math.random() * canvas.height;
-
-    this.vx = 0;
-    this.vy = 0;
-
-    this.bx = x;
-    this.by = y;
-    this.bz = z;
+    this.z = z;
 
     this.tx = x;
     this.ty = y;
 
+    this.vx = 0;
+    this.vy = 0;
+
     this.size = 1.6;
     this.phase = Math.random() * Math.PI * 2;
-    this.noiseX = (Math.random() - 0.5) * NOISE;
-    this.noiseY = (Math.random() - 0.5) * NOISE;
   }
 
   update() {
-    const dx = this.tx - this.x;
-    const dy = this.ty - this.y;
+    // atracción
+    this.vx += (this.tx - this.x) * SPRING;
+    this.vy += (this.ty - this.y) * SPRING;
 
-    this.vx += dx * LOOSE_FORCE;
-    this.vy += dy * LOOSE_FORCE;
+    this.vx *= FRICTION;
+    this.vy *= FRICTION;
 
-    this.vx *= 0.85;
-    this.vy *= 0.85;
+    this.phase += 0.08;
 
-    this.phase += 0.05;
-    const vib = mode === "text" ? VIB_TEXT : VIB_HEART;
-
-    this.x += this.vx + Math.sin(this.phase) * vib + this.noiseX;
-    this.y += this.vy + Math.cos(this.phase) * vib + this.noiseY;
+    // vibración orgánica (NO rompe forma)
+    const vib = mode === "text" ? 0.5 : 1.2;
+    this.x += this.vx + Math.sin(this.phase) * vib;
+    this.y += this.vy + Math.cos(this.phase) * vib;
   }
 
   draw() {
@@ -100,18 +92,14 @@ class Particle {
   }
 }
 
-/* ===== HEART ===== */
+/* ===== CORAZÓN ===== */
 function heartPoint(t, s) {
-  const x = 16 * Math.sin(t) ** 3;
-  const y =
-    13 * Math.cos(t) -
-    5 * Math.cos(2 * t) -
-    2 * Math.cos(3 * t) -
-    Math.cos(4 * t);
-
   return {
-    x: x * s,
-    y: -y * s,
+    x: 16 * Math.sin(t) ** 3 * s,
+    y: -(13 * Math.cos(t)
+      - 5 * Math.cos(2 * t)
+      - 2 * Math.cos(3 * t)
+      - Math.cos(4 * t)) * s,
     z: (Math.random() - 0.5) * s
   };
 }
@@ -123,7 +111,6 @@ function createHeart() {
   for (let i = 0; i < PARTICLES; i++) {
     const t = Math.random() * Math.PI * 2;
     const p = heartPoint(t, scale);
-
     particles.push(
       new Particle(
         canvas.width / 2 + p.x,
@@ -134,47 +121,49 @@ function createHeart() {
   }
 }
 
-/* ===== ROTACIÓN 3D ===== */
-function rotateHeart3D() {
+/* ===== ROTACIÓN 3D REAL ===== */
+function rotateHeart() {
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
-  const perspective = 900;
+  const perspective = 800;
 
   for (const p of particles) {
-    const dx = p.bx - cx;
-    const dz = p.bz;
+    const dx = p.tx - cx;
+    const dz = p.z;
 
     const cos = Math.cos(angle);
     const sin = Math.sin(angle);
 
-    const x3d = dx * cos - dz * sin;
-    const z3d = dx * sin + dz * cos;
+    const x3 = dx * cos - dz * sin;
+    const z3 = dx * sin + dz * cos;
 
-    const scale = perspective / (perspective + z3d);
+    const scale = perspective / (perspective + z3);
 
-    p.tx = cx + x3d * scale;
-    p.ty = cy + (p.by - cy) * scale;
+    p.tx = cx + x3 * scale;
+    p.ty = cy + (p.ty - cy) * scale;
   }
 }
 
-/* ===== TEXTO ===== */
+/* ===== TEXTO ADAPTATIVO ===== */
 function createText(text) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  mode = "text";
+
+  textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
 
   let fontSize = canvas.height * 0.35;
-  ctx.font = `bold ${fontSize}px Arial`;
+  textCtx.font = `bold ${fontSize}px Arial`;
 
-  while (ctx.measureText(text).width > canvas.width * 0.85) {
-    fontSize *= 0.95;
-    ctx.font = `bold ${fontSize}px Arial`;
+  while (textCtx.measureText(text).width > canvas.width * 0.85) {
+    fontSize *= 0.92;
+    textCtx.font = `bold ${fontSize}px Arial`;
   }
 
-  ctx.fillStyle = "white";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  textCtx.fillStyle = "white";
+  textCtx.textAlign = "center";
+  textCtx.textBaseline = "middle";
+  textCtx.fillText(text, canvas.width / 2, canvas.height / 2);
 
-  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  const data = textCtx.getImageData(0, 0, canvas.width, canvas.height).data;
 
   let i = 0;
   for (let y = 0; y < canvas.height; y += 4) {
@@ -191,13 +180,12 @@ function createText(text) {
 
 /* ===== LOOP ===== */
 function animate() {
-  // 🔥 NO borramos todo → rastro
-  ctx.fillStyle = `rgba(0,0,0,${TRAIL_ALPHA})`;
+  ctx.fillStyle = `rgba(0,0,0,${TRAIL})`;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (mode === "rotate") {
-    angle += ROTATION_SPEED;
-    rotateHeart3D();
+    angle += ROT_SPEED;
+    rotateHeart();
   }
 
   for (const p of particles) {
@@ -213,21 +201,14 @@ function cycle() {
   mode = "heart";
   createHeart();
 
-  setTimeout(() => {
-    mode = "rotate";
-  }, TRANSITION_TIME);
-
-  setTimeout(() => {
-    mode = "text";
-    createText("TE AMO 💖");
-  }, TRANSITION_TIME * 2);
+  setTimeout(() => mode = "rotate", 4000);
+  setTimeout(() => createText("TE AMO MI VITA 💖"), 9000);
 }
 
-/* ===== START ===== */
 createHeart();
 animate();
 cycle();
-setInterval(cycle, TRANSITION_TIME * 3);
+setInterval(cycle, 15000);
 </script>
 </body>
 </html>
