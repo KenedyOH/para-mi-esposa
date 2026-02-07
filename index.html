@@ -28,10 +28,17 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-/* ===== RESPONSIVE CANVAS ===== */
+/* ===== RESPONSIVE + MOBILE FIX ===== */
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 resize();
 window.addEventListener("resize", resize);
@@ -114,11 +121,11 @@ function createHeart() {
   }
 }
 
-/* ===== CREATE TEXT ===== */
+/* ===== CREATE TEXT (FIXED) ===== */
 function createText(text) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const fontSize = Math.min(canvas.width, canvas.height) / 5; // RESPONSIVE
+  const fontSize = Math.min(canvas.width, canvas.height) / 5;
   ctx.font = `bold ${fontSize}px Arial`;
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
@@ -126,20 +133,25 @@ function createText(text) {
   ctx.fillText(text, canvas.width / 2, canvas.height / 2);
 
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-  let i = 0;
 
-  for (let y = 0; y < canvas.height; y += 5) {
-    for (let x = 0; x < canvas.width; x += 5) {
+  let usedParticles = 0;
+
+  for (let y = 0; y < canvas.height; y += 4) {
+    for (let x = 0; x < canvas.width; x += 4) {
       const idx = (y * canvas.width + x) * 4;
-      if (data[idx + 3] > 150 && particles[i]) {
-        particles[i].target = new Point(x, y);
-        particles[i].base = particles[i].target.clone();
-        i++;
+      if (data[idx + 3] > 150 && particles[usedParticles]) {
+        particles[usedParticles].target = new Point(x, y);
+        particles[usedParticles].base = particles[usedParticles].target.clone();
+        usedParticles++;
       }
     }
   }
-}
 
+  // Partículas sobrantes se quedan quietas
+  for (let i = usedParticles; i < particles.length; i++) {
+    particles[i].target = particles[i].base.clone();
+  }
+}
 
 /* ===== ROTACIÓN PLANO Z–Y (EJE X) ===== */
 function applyZYRotation() {
