@@ -62,19 +62,26 @@ class Particle {
   }
 
   update() {
-  const currentSpeed = (mode === "text") ? 0.015 : this.speed;
+    // Movimiento más lento cuando forma el texto
+    const currentSpeed = (mode === "text") ? 0.015 : this.speed;
 
-  this.pos.x += (this.target.x - this.pos.x) * currentSpeed;
-  this.pos.y += (this.target.y - this.pos.y) * currentSpeed;
+    this.pos.x += (this.target.x - this.pos.x) * currentSpeed;
+    this.pos.y += (this.target.y - this.pos.y) * currentSpeed;
 
-  // Vibración muy suave (especial para texto)
-  this.offset += 0.03;
-  const vib = (mode === "text") ? 0.08 : 0.3;
+    // Vibración suave (mínima en texto)
+    this.offset += 0.03;
+    const vibration = (mode === "text") ? 0.08 : 0.3;
 
-  this.pos.x += Math.sin(this.offset) * vib;
-  this.pos.y += Math.cos(this.offset) * vib;
+    this.pos.x += Math.sin(this.offset) * vibration;
+    this.pos.y += Math.cos(this.offset) * vibration;
   }
 
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.pos.x, this.pos.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = "#4fc3ff";
+    ctx.fill();
+  }
 }
 
 /* ===== HEART SHAPE ===== */
@@ -103,7 +110,7 @@ function createHeart() {
   }
 }
 
-/* ===== CREATE TEXT (MÁS GRANDE) ===== */
+/* ===== CREATE TEXT ===== */
 function createText(text) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -117,8 +124,8 @@ function createText(text) {
   const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
   let i = 0;
 
-  for (let y = 0; y < canvas.height; y += 6) {
-    for (let x = 0; x < canvas.width; x += 6) {
+  for (let y = 0; y < canvas.height; y += 5) {
+    for (let x = 0; x < canvas.width; x += 5) {
       const idx = (y * canvas.width + x) * 4;
       if (data[idx + 3] > 150 && particles[i]) {
         particles[i].target = new Point(x, y);
@@ -132,7 +139,7 @@ function createText(text) {
 /* ===== ROTACIÓN PLANO Z–Y (EJE X) ===== */
 function applyZYRotation() {
   const cx = canvas.width / 2;
-  const depth = Math.cos(rotation); // simulación Z
+  const depth = Math.cos(rotation);
 
   for (const p of particles) {
     const dx = p.base.x - cx;
